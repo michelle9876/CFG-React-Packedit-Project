@@ -1,0 +1,9 @@
+@import "typeface-nunito";
+@import "typeface-raleway";
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "typeface-nunito",
+    "typeface-raleway", "Nunito", "Raleway", "Roboto";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}

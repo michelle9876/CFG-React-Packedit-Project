@@ -1,67 +1,38 @@
-// CraeteYourList - Home page
-import React from "react";
-import { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-
-import Form from "react-bootstrap/Form";
-import Button from "react-bootstrap/Button";
-import Row from "react-bootstrap/Row";
-import Col from "react-bootstrap/Col";
-import Card from "react-bootstrap/Card";
+import { Form, Button, Row, Col, Card } from "react-bootstrap";
 import "../styles/CreateYourList.scss";
 import { db } from "../Firebase/firebase-config";
-import {
-  collection,
-  writeBatch,
-  getDocs,
-  addDoc,
-  setDoc,
-  arrayUnion,
-  updateDoc,
-  doc,
-  deleteDoc,
-  Timestamp,
-  firestore,
-  DocumentReference,
-} from "firebase/firestore";
+import { collection, addDoc } from "firebase/firestore";
 
 function CreateYourList() {
-  // submit handler for when the user presses the submit button
   function submitHandler(e) {
-    //to prevent the page from reloading/refreshing
-    //this is bad because it resets the state, if we have any
+    // submit handler for when the user presses the submit button to prevent the page
+    // from reloading/refreshing - this is bad because it resets the state, if we have any
     e.preventDefault();
   }
 
+  // setting the state of the many different form elements
   const navigate = useNavigate();
-
   const myListCollectionRef = collection(db, "trips");
-
   const [newListName, setNewListName] = useState("");
   const [newDestination, setNewDestination] = useState("");
   const [newDate, setNewDate] = useState("");
-  const [newCategories, setNewCategories] = useState("");
-
   const [clothesCheck, setClothesCheck] = useState(false);
   const [documentCheck, setDocumentCheck] = useState(false);
-  const [electronicCheck, setelectronicCheck] = useState(false);
+  const [electronicsCheck, setElectronicsCheck] = useState(false);
   const [toiletriesCheck, setToiletriesCheck] = useState(false);
   const [covidCheck, setCovidCheck] = useState(false);
 
-  
-
+  // when the 'create your list' button is pressed, this function adds all of the form responses for this list to the database
   const createList = async () => {
-    //redirecting user to your list page
-    let path = `/your-list`;
-    navigate(path);
-
     const timestampConverted = new Date(newDate);
-    
     await addDoc(myListCollectionRef, {
       ListName: newListName,
       Destination: newDestination,
       Date: timestampConverted,
     }).then((DocumentReference) => {
+      // the following lines check if the radio button categories have been selected & add to db
       if (clothesCheck) {
         addDoc(
           collection(db, "trips/" + DocumentReference.id + "/categories"),
@@ -74,10 +45,10 @@ function CreateYourList() {
           { CategoryName: "Documents", CategoryItems: [] }
         );
       }
-      if (electronicCheck) {
+      if (electronicsCheck) {
         addDoc(
           collection(db, "trips/" + DocumentReference.id + "/categories"),
-          { CategoryName: "Eletronics", CategoryItems: [] }
+          { CategoryName: "Electronics", CategoryItems: [] }
         );
       }
       if (toiletriesCheck) {
@@ -92,17 +63,12 @@ function CreateYourList() {
           { CategoryName: "COVID-19 Safety", CategoryItems: [] }
         );
       }
+      navigate("/your-list", { state: { tripID: DocumentReference.id } }); // this takes the user to the Your List page on form submission
     });
-
-    //Old code
-    // await addDoc(myListCategoriesCollectionRef,
-    //   newCategories
-    //   );
   };
 
   return (
     <div>
-      {/* {documentCheck ? <>checked</> : <>not checked</>} */}
       <Card className="card">
         <Form onSubmit={submitHandler}>
           <Row>
@@ -147,6 +113,7 @@ function CreateYourList() {
               </Form.Group>
             </Col>
           </Row>
+
           <Row>
             <Form.Group className="mb-3" controlId="formBasicCheckbox">
               <Form.Label className="title-text my-3">
@@ -158,8 +125,7 @@ function CreateYourList() {
                 inline
                 type="checkbox"
                 label="Clothes"
-                id="string" // accessibility
-                // onChange={() => {handleCheck("Clothes")}}
+                id="clothes" // accessibility
                 onChange={() => setClothesCheck(!clothesCheck)}
               />
               <Form.Check
@@ -167,8 +133,7 @@ function CreateYourList() {
                 inline
                 type="checkbox"
                 label="Documents"
-                id="string" //accessibility
-                // onChange={() => { handleCheck("Documents") }}
+                id="documents" //accessibility
                 onChange={() => setDocumentCheck(!documentCheck)}
               />
               <Form.Check
@@ -176,17 +141,15 @@ function CreateYourList() {
                 inline
                 type="checkbox"
                 label="Electronics"
-                id="string" // accessibility
-                // onChange={() => { handleCheck("Electronics") }}
-                onChange={() => setelectronicCheck(!electronicCheck)}
+                id="electronics" // accessibility
+                onChange={() => setElectronicsCheck(!electronicsCheck)}
               />
               <Form.Check
                 className="categories-text"
                 inline
                 type="checkbox"
                 label="Toiletries"
-                id="string" // accessibility
-                // onChange={() => { handleCheck("Toiletries") }}
+                id="toiletries" // accessibility
                 onChange={() => setToiletriesCheck(!toiletriesCheck)}
               />
               <Form.Check
@@ -194,8 +157,7 @@ function CreateYourList() {
                 inline
                 type="checkbox"
                 label="COVID-19 Safety"
-                id="string" // accessibility
-                // onChange={() => { handleCheck("COVID-19 Safety") }}
+                id="covid" // accessibility
                 onChange={() => setCovidCheck(!covidCheck)}
               />
               <Form.Text className="categories-text text-muted">
@@ -204,11 +166,12 @@ function CreateYourList() {
               </Form.Text>
             </Form.Group>
           </Row>
+
           <Button
-            className="create-button create-button-text"
+            className="create-button"
             variant="primary"
             type="submit"
-            onClick={createList} // need to add in functionality here that routes the user to the Your List page once this is complete
+            onClick={createList}
           >
             Create your list
           </Button>
